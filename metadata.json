@@ -1,0 +1,6 @@
+{
+  "name": "Northstar Support Assistant",
+  "description": "Virtual customer support assistant for Northstar Retail Co. handling order status, returns & refunds, with human escalation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
