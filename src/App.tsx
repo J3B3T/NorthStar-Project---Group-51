@@ -37,8 +37,11 @@ export default function App() {
     fetchData();
   }, []);
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const fetchData = async () => {
     try {
+      setFetchError(null);
       const [ordersRes, analyticsRes] = await Promise.all([
         fetch('/api/orders'),
         fetch('/api/analytics'),
@@ -53,6 +56,7 @@ export default function App() {
       }
     } catch (err) {
       console.warn('Using client fallback data:', err);
+      setFetchError('Unable to connect to server. Using cached data.');
     }
   };
 
@@ -150,27 +154,46 @@ export default function App() {
         deflectionRate={analytics.deflectionRate}
       />
 
-      <main className="flex-1">
+      {fetchError && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center justify-between" role="alert">
+          <span>{fetchError}</span>
+          <button
+            onClick={() => setFetchError(null)}
+            className="text-amber-600 hover:text-amber-800 font-semibold"
+            aria-label="Dismiss error"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <main className="flex-1" role="main">
         {activeTab === 'chat' && (
-          <ChatWindow
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            onOpenEscalationModal={handleOpenEscalationModal}
-            onResetChat={handleResetChat}
-            orders={orders}
-          />
+          <section aria-label="Support Chat">
+            <ChatWindow
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              isLoading={isLoading}
+              onOpenEscalationModal={handleOpenEscalationModal}
+              onResetChat={handleResetChat}
+              orders={orders}
+            />
+          </section>
         )}
 
         {activeTab === 'orders' && (
-          <OrderExplorer
-            orders={orders}
-            onSelectOrderForChat={handleSelectOrderForChat}
-          />
+          <section aria-label="Order Database">
+            <OrderExplorer
+              orders={orders}
+              onSelectOrderForChat={handleSelectOrderForChat}
+            />
+          </section>
         )}
 
         {activeTab === 'analytics' && (
-          <DeflectionDashboard analytics={analytics} />
+          <section aria-label="Deflection Analytics">
+            <DeflectionDashboard analytics={analytics} />
+          </section>
         )}
       </main>
 

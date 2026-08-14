@@ -16,16 +16,32 @@ export const EscalationModal: React.FC<EscalationModalProps> = ({
   reason,
   onSubmitTicket,
 }) => {
-  const [name, setName] = useState('Sarah Jenkins');
-  const [email, setEmail] = useState('sarah.j@example.com');
-  const [phone, setPhone] = useState('(555) 019-2831');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
 
   if (!isOpen) return null;
 
+  const validateForm = (): boolean => {
+    const newErrors: { name?: string; email?: string } = {};
+    if (!name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     onSubmitTicket({ name, email, phone, note });
     setSubmitted(true);
     setTimeout(() => {
@@ -35,24 +51,25 @@ export const EscalationModal: React.FC<EscalationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="escalation-title">
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-900 to-rose-950 text-white p-5 flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
-              <ShieldAlert className="w-5 h-5" />
+              <ShieldAlert className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Connect with Support Specialist</h3>
+              <h3 id="escalation-title" className="text-lg font-bold">Connect with Support Specialist</h3>
               <p className="text-xs text-slate-300">Northstar Retail Co. Human Escalation</p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close escalation modal"
             className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -84,8 +101,11 @@ export const EscalationModal: React.FC<EscalationModalProps> = ({
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-800"
+                    className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-800 ${errors.name ? 'border-rose-500' : 'border-slate-300'}`}
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? 'name-error' : undefined}
                   />
+                  {errors.name && <p id="name-error" className="text-rose-600 text-xs mt-1">{errors.name}</p>}
                 </div>
               </div>
 
@@ -98,8 +118,11 @@ export const EscalationModal: React.FC<EscalationModalProps> = ({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-800"
+                    className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-800 ${errors.email ? 'border-rose-500' : 'border-slate-300'}`}
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
                   />
+                  {errors.email && <p id="email-error" className="text-rose-600 text-xs mt-1">{errors.email}</p>}
                 </div>
               </div>
 

@@ -6,7 +6,7 @@ interface DeflectionDashboardProps {
   analytics: DeflectionAnalytics;
 }
 
-export const DeflectionDashboard: React.FC<DeflectionDashboardProps> = ({ analytics }) => {
+export const DeflectionDashboard: React.FC<DeflectionDashboardProps> = React.memo(({ analytics }) => {
   const deflectionPercent = analytics.deflectionRate;
   const total = Math.max(1, analytics.totalConversations);
 
@@ -180,4 +180,4 @@ export const DeflectionDashboard: React.FC<DeflectionDashboardProps> = ({ analyt
       </div>
     </div>
   );
-};
+});

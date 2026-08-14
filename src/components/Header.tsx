@@ -1,5 +1,6 @@
 import React from 'react';
-import { Bot, Package, BarChart3, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bot, Package, BarChart3, RotateCcw, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
   activeTab: 'chat' | 'orders' | 'analytics';
@@ -8,12 +9,13 @@ interface HeaderProps {
   deflectionRate: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps> = React.memo(({
   activeTab,
   setActiveTab,
   onResetData,
   deflectionRate,
 }) => {
+  const { theme, toggleTheme } = useTheme();
   return (
     <header className="sticky top-0 z-30 bg-slate-900 text-slate-100 border-b border-slate-800 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,41 +53,47 @@ export const Header: React.FC<HeaderProps> = ({
           <nav className="flex items-center space-x-1 sm:space-x-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/60">
             <button
               onClick={() => setActiveTab('chat')}
+              aria-label="Support Chat"
+              aria-current={activeTab === 'chat' ? 'page' : undefined}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'chat'
                   ? 'bg-cyan-600 text-white shadow'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              <Bot className="w-4 h-4" />
+              <Bot className="w-4 h-4" aria-hidden="true" />
               <span>Support Chat</span>
             </button>
 
             <button
               onClick={() => setActiveTab('orders')}
+              aria-label="Order Database"
+              aria-current={activeTab === 'orders' ? 'page' : undefined}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'orders'
                   ? 'bg-cyan-600 text-white shadow'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              <Package className="w-4 h-4" />
+              <Package className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Order Database</span>
               <span className="sm:hidden">Orders</span>
             </button>
 
             <button
               onClick={() => setActiveTab('analytics')}
+              aria-label="Deflection Analytics"
+              aria-current={activeTab === 'analytics' ? 'page' : undefined}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'analytics'
                   ? 'bg-cyan-600 text-white shadow'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Deflection Analytics</span>
               <span className="sm:hidden">Metrics</span>
-              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" aria-label={`Deflection rate: ${deflectionRate}%`}>
                 {deflectionRate}%
               </span>
             </button>
@@ -93,6 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Quick Actions */}
           <div className="hidden md:flex items-center space-x-3">
+            <button
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              className="p-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
             <button
               onClick={onResetData}
               title="Reset order state and chat metrics"
@@ -106,4 +122,4 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-};
+});

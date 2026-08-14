@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Order } from '../types';
 import { Package, Search, ExternalLink, ShieldAlert, CheckCircle2, Truck, RefreshCw, Clock, Copy, AlertTriangle } from 'lucide-react';
+import { StatusBadge } from './StatusBadge';
 
 interface OrderExplorerProps {
   orders: Order[];
   onSelectOrderForChat: (orderNumber: string) => void;
 }
 
-export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOrderForChat }) => {
+export const OrderExplorer: React.FC<OrderExplorerProps> = React.memo(({ orders, onSelectOrderForChat }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -31,24 +32,9 @@ export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOr
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Processing':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 border border-amber-300">Processing</span>;
-      case 'Packed':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-700 border border-blue-300">Packed</span>;
-      case 'Shipped':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-700 border border-indigo-300">Shipped</span>;
-      case 'Out for Delivery':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-700 border border-purple-300 animate-pulse">Out for Delivery</span>;
-      case 'Delivered':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 border border-emerald-300">Delivered</span>;
-      case 'Cancelled':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-700 border border-slate-300">Cancelled</span>;
-      default:
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">{status}</span>;
-    }
-  };
+  const getStatusBadge = useCallback((status: string) => {
+    return <StatusBadge status={status as Order['status']} size="md" />;
+  }, []);
 
   const getReturnBadge = (status: string, isDamaged?: boolean) => {
     if (isDamaged) {
@@ -100,12 +86,13 @@ export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOr
         {/* Filters */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" aria-hidden="true" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by Order # (e.g. NS1004), Customer, or Product..."
+              aria-label="Search orders"
               className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white text-slate-800"
             />
           </div>
@@ -125,6 +112,8 @@ export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOr
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id)}
+                aria-pressed={statusFilter === tab.id}
+                aria-label={`Filter by ${tab.label}`}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   statusFilter === tab.id
                     ? 'bg-cyan-700 text-white shadow-sm'
@@ -154,6 +143,7 @@ export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOr
                       </span>
                       <button
                         onClick={() => handleCopy(order.orderNumber)}
+                        aria-label={`Copy order number ${order.orderNumber}`}
                         title="Copy order number"
                         className="text-slate-400 hover:text-cyan-600 p-1 rounded transition-colors"
                       >
@@ -238,4 +228,4 @@ export const OrderExplorer: React.FC<OrderExplorerProps> = ({ orders, onSelectOr
       </div>
     </div>
   );
-};
+});

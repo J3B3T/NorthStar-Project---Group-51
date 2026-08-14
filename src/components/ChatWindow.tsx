@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ChatMessage, Order } from '../types';
 import {
   Send,
@@ -20,6 +20,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import avatarImg from '../assets/images/support_avatar_1786612469261.jpg';
+import { StatusBadge } from './StatusBadge';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
@@ -30,7 +31,7 @@ interface ChatWindowProps {
   orders: Order[];
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({
+export const ChatWindow: React.FC<ChatWindowProps> = React.memo(({
   messages,
   onSendMessage,
   isLoading,
@@ -43,13 +44,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [feedbackState, setFeedbackState] = useState<Record<string, 'helpful' | 'not_helpful'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, scrollToBottom]);
 
   // Handle TTS text to speech when enabled
   useEffect(() => {
@@ -61,6 +62,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
         window.speechSynthesis.speak(utterance);
+
+        // Cleanup on unmount or when messages change
+        return () => {
+          window.speechSynthesis.cancel();
+        };
       }
     }
   }, [messages, ttsEnabled]);
@@ -85,24 +91,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  const renderOrderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Processing':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">Processing</span>;
-      case 'Packed':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">Packed</span>;
-      case 'Shipped':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">Shipped</span>;
-      case 'Out for Delivery':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">Out for Delivery</span>;
-      case 'Delivered':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">Delivered</span>;
-      case 'Cancelled':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">Cancelled</span>;
-      default:
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{status}</span>;
-    }
-  };
+  const renderOrderStatusBadge = useCallback((status: string) => {
+    return <StatusBadge status={status as Order['status']} />;
+  }, []);
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-100">
@@ -133,6 +124,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <button
             onClick={() => setTtsEnabled(!ttsEnabled)}
             title={ttsEnabled ? 'Mute AI Voice Speech' : 'Enable AI Voice Speech'}
+            aria-label={ttsEnabled ? 'Mute AI Voice Speech' : 'Enable AI Voice Speech'}
             className={`p-2 rounded-lg text-xs font-medium border transition-colors ${
               ttsEnabled
                 ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
@@ -145,6 +137,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <button
             onClick={onResetChat}
             title="Start new support conversation"
+            aria-label="Start new support conversation"
             className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -374,15 +367,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask about order status or returns (e.g., Where is my order NS1004?)..."
+            aria-label="Chat message input"
             className="flex-1 bg-slate-50 border border-slate-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white text-slate-800 transition-all placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || isLoading}
+            aria-label="Send message"
             className="bg-cyan-700 hover:bg-cyan-800 disabled:bg-slate-300 text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 transition-colors shadow-sm disabled:cursor-not-allowed"
           >
             <span>Send</span>
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
           </button>
         </form>
 
@@ -393,4 +388,4 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
     </div>
   );
-};
+});
