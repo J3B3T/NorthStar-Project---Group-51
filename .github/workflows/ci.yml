@@ -36,4 +36,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ toLower(github.repository) }}:latest
+          tags: ghcr.io/j3b3t/northstar-project---group-51:latest
