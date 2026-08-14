@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { processFallbackChat } from '../../services/fallback';
-import { Order, DeflectionAnalytics } from '../types';
-import { INITIAL_ORDERS, INITIAL_ANALYTICS } from '../mockData';
+import { processFallbackChat } from '@/services/fallback';
+import { Order, DeflectionAnalytics } from '@/src/types';
+import { INITIAL_ORDERS, INITIAL_ANALYTICS } from '@/src/mockData';
 
 describe('processFallbackChat', () => {
   const createAnalytics = (): DeflectionAnalytics => JSON.parse(JSON.stringify(INITIAL_ANALYTICS));
