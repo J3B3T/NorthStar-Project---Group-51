@@ -1,10 +1,20 @@
-import { describe, it, expect } from 'vitest';
 import { processFallbackChat } from '@/services/fallback';
 import { Order, DeflectionAnalytics } from '@/src/types';
 import { INITIAL_ORDERS, INITIAL_ANALYTICS } from '@/src/mockData';
 
 describe('processFallbackChat', () => {
-  const createAnalytics = (): DeflectionAnalytics => JSON.parse(JSON.stringify(INITIAL_ANALYTICS));
+  const createAnalytics = (): DeflectionAnalytics => ({
+    totalConversations: 0,
+    deflectedCount: 0,
+    escalatedCount: 0,
+    deflectionRate: 0,
+    intentBreakdown: {
+      orderStatus: 0,
+      returnsRefunds: 0,
+      escalated: 0,
+    },
+    recentTickets: [],
+  });
   const orders = [...INITIAL_ORDERS];
 
   it('returns greeting for unknown message', () => {
